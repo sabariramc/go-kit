@@ -35,29 +35,28 @@ func (e *Error) MarshalJSON() ([]byte, error) {
 	sb.Grow(len(e.Code) + len(e.Message) + 200)
 	sb.Write([]byte("{"))
 	addComma := false
+	valueList := make([][2]string, 0, 3)
 	if e.Code != "" {
-		sb.WriteString("\"code\": \"")
-		sb.WriteString(e.Code)
-		sb.WriteString("\"")
-		addComma = true
+		valueList = append(valueList, [2]string{"code", e.Code})
 	}
 	if e.Message != "" {
+		valueList = append(valueList, [2]string{"message", e.Message})
+	}
+	for _, v := range valueList {
 		if addComma {
-			sb.WriteString(", ")
+			sb.WriteString(",")
 		}
-		sb.WriteString("\"message\": \"")
-		sb.WriteString(e.Message)
-		sb.WriteString("\"")
+		sb.WriteString("\"" + v[0] + "\":\"" + v[1] + "\"")
 		addComma = true
 	}
 	if e.Description != nil {
 		if addComma {
-			sb.WriteString(", ")
+			sb.WriteString(",")
 		}
-		sb.WriteString("\"description\": ")
+		sb.WriteString("\"description\":")
 		blob, err := json.Marshal(e.Description)
 		if err != nil {
-			sb.WriteString("\"**error marshalling description**\"")
+			sb.WriteString("\"**marshal error**" + err.Error() + "\"")
 		} else {
 			sb.Write(blob)
 		}
