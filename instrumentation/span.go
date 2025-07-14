@@ -29,4 +29,5 @@ const (
 // Constants representing attribute keys for spans.
 const (
 	HTTPStatusCode = "http.response.status_code"
+	MessageSystem  = "messaging.system"
 )
