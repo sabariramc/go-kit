@@ -1,6 +1,7 @@
 package log
 
 import (
+	"io"
 	"os"
 	"time"
 
@@ -38,15 +39,61 @@ func getLevel() zerolog.Level {
 	return lvl
 }
 
-func NewConsoleWriter(module string, hooks ...zerolog.Hook) zerolog.Logger {
+func NewConsoleWriter(module string, opt ...Option) zerolog.Logger {
+	cfg := NewConfig(opt...)
 	return zerolog.New(zerolog.NewConsoleWriter(func(w *zerolog.ConsoleWriter) {
 		w.TimeFormat = time.RFC3339
-		w.Out = os.Stdout
+		w.Out = cfg.Target
 		w.NoColor = false
-	})).With().Timestamp().Str("module", module).Logger().Level(getLevel()).Hook(zerolog.HookFunc(EventCorrelation)).Hook(hooks...)
+	})).With().Timestamp().Str("module", module).Logger().Level(cfg.Level).Hook(cfg.Hooks...)
 }
 
-func New(module string, hooks ...zerolog.Hook) zerolog.Logger {
-	return zerolog.New(os.Stdout).With().
-		Timestamp().Str("module", module).Logger().Level(getLevel()).Hook(zerolog.HookFunc(EventCorrelation)).Hook(hooks...)
+func New(module string, opt ...Option) zerolog.Logger {
+	cfg := NewConfig(opt...)
+	return zerolog.New(cfg.Target).With().
+		Timestamp().Str("module", module).Logger().Level(cfg.Level).Hook(cfg.Hooks...)
+}
+
+type Config struct {
+	Hooks  []zerolog.Hook
+	Target io.Writer
+	Level  zerolog.Level
+}
+
+func NewConfig(opts ...Option) *Config {
+	c := &Config{
+		Hooks:  []zerolog.Hook{zerolog.HookFunc(EventCorrelation)},
+		Target: os.Stdout,
+		Level:  getLevel(),
+	}
+	for _, opt := range opts {
+		opt(c)
+	}
+	return c
+}
+
+type Option func(*Config)
+
+func WithHooks(hooks ...zerolog.Hook) Option {
+	return func(c *Config) {
+		c.Hooks = append(c.Hooks, hooks...)
+	}
+}
+
+func WithTarget(target io.Writer) Option {
+	return func(c *Config) {
+		c.Target = target
+	}
+}
+
+func WithLevel(level zerolog.Level) Option {
+	return func(c *Config) {
+		c.Level = level
+	}
+}
+
+func WithNewHooks(hooks ...zerolog.Hook) Option {
+	return func(c *Config) {
+		c.Hooks = hooks
+	}
 }
