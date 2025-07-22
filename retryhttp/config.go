@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/rs/zerolog"
 	"github.com/sabariramc/go-kit/log"
 )
 
@@ -19,13 +18,13 @@ type Backoff func(min, max time.Duration, attemptNum int, resp *http.Response) t
 // Config contains the configuration settings for the HTTP client, including logging,
 // retry policies, backoff strategies, and the HTTP client itself.
 type Config struct {
-	RetryMax     uint           // RetryMax is the maximum number of retry attempts for failed requests.
-	MinRetryWait time.Duration  // MinRetryWait is the minimum duration to wait before retrying a failed request.
-	MaxRetryWait time.Duration  // MaxRetryWait is the maximum duration to wait before retrying a failed request.
-	CheckRetry   CheckRetry     // CheckRetry is the function to determine if a request should be retried.
-	Backoff      Backoff        // Backoff is the function to determine the wait duration between retries.
-	Client       *http.Client   // Client is the underlying HTTP client used to make requests.
-	Log          zerolog.Logger // Logger for the HTTP client
+	RetryMax     uint          // RetryMax is the maximum number of retry attempts for failed requests.
+	MinRetryWait time.Duration // MinRetryWait is the minimum duration to wait before retrying a failed request.
+	MaxRetryWait time.Duration // MaxRetryWait is the maximum duration to wait before retrying a failed request.
+	CheckRetry   CheckRetry    // CheckRetry is the function to determine if a request should be retried.
+	Backoff      Backoff       // Backoff is the function to determine the wait duration between retries.
+	Client       *http.Client  // Client is the underlying HTTP client used to make requests.
+	Log          log.Logger    // Logger for the HTTP client
 }
 
 // newDefaultHTTPClient creates and configures a new HTTP client with custom transport settings.

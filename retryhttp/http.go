@@ -9,12 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rs/zerolog"
+	"github.com/sabariramc/go-kit/log"
 )
 
 type Client struct {
 	*http.Client
-	log          zerolog.Logger
+	log          log.Logger
 	retryMax     uint
 	minRetryWait time.Duration
 	maxRetryWait time.Duration
@@ -121,11 +121,11 @@ func (h *Client) backOffAndRetry(i int, req *http.Request, resp *http.Response, 
 	if resp != nil && resp.ContentLength > 0 {
 		defer resp.Body.Close()
 		resBlob, _ := io.ReadAll(resp.Body)
-		h.log.Warn().Ctx(req.Context()).Str("response", string(resBlob)).Msgf("request failed with status code %v retry %v of %v in %vms, resp: ", resp.StatusCode, i+1, h.retryMax, wait.Milliseconds())
+		h.log.Warn(req.Context()).Str("response", string(resBlob)).Msgf("request failed with status code %v retry %v of %v in %vms, resp: ", resp.StatusCode, i+1, h.retryMax, wait.Milliseconds())
 	} else if doErr != nil {
-		h.log.Warn().Ctx(req.Context()).Err(doErr).Msgf("request failed with error - retry %v of %v in %vms", i+1, h.retryMax, wait.Milliseconds())
+		h.log.Warn(req.Context()).Err(doErr).Msgf("request failed with error - retry %v of %v in %vms", i+1, h.retryMax, wait.Milliseconds())
 	} else {
-		h.log.Warn().Ctx(req.Context()).Msgf("request failed - retry %v of %v in %vms", i+1, h.retryMax, wait.Milliseconds())
+		h.log.Warn(req.Context()).Msgf("request failed - retry %v of %v in %vms", i+1, h.retryMax, wait.Milliseconds())
 	}
 	timer := time.NewTimer(wait)
 	select {
