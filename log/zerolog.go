@@ -1,6 +1,7 @@
 package log
 
 import (
+	"context"
 	"io"
 	"os"
 	"time"
@@ -39,19 +40,51 @@ func getLevel() zerolog.Level {
 	return lvl
 }
 
-func NewConsoleWriter(module string, opt ...Option) zerolog.Logger {
+type Logger struct {
+	zerolog.Logger
+}
+
+func (l Logger) Trace(ctx context.Context) *zerolog.Event {
+	return l.Logger.Trace().Ctx(ctx)
+}
+
+func (l Logger) Debug(ctx context.Context) *zerolog.Event {
+	return l.Logger.Debug().Ctx(ctx)
+}
+
+func (l Logger) Info(ctx context.Context) *zerolog.Event {
+	return l.Logger.Info().Ctx(ctx)
+}
+
+func (l Logger) Warn(ctx context.Context) *zerolog.Event {
+	return l.Logger.Warn().Ctx(ctx)
+}
+
+func (l Logger) Error(ctx context.Context) *zerolog.Event {
+	return l.Logger.Error().Ctx(ctx)
+}
+
+func (l Logger) Panic(ctx context.Context) *zerolog.Event {
+	return l.Logger.Panic().Ctx(ctx)
+}
+
+func (l Logger) Fatal(ctx context.Context) *zerolog.Event {
+	return l.Logger.Fatal().Ctx(ctx)
+}
+
+func NewConsoleWriter(module string, opt ...Option) Logger {
 	cfg := NewConfig(opt...)
-	return zerolog.New(zerolog.NewConsoleWriter(func(w *zerolog.ConsoleWriter) {
+	return Logger{zerolog.New(zerolog.NewConsoleWriter(func(w *zerolog.ConsoleWriter) {
 		w.TimeFormat = time.RFC3339
 		w.Out = cfg.Target
 		w.NoColor = false
-	})).With().Timestamp().Str("module", module).Logger().Level(cfg.Level).Hook(cfg.Hooks...)
+	})).With().Timestamp().Str("module", module).Logger().Level(cfg.Level).Hook(cfg.Hooks...)}
 }
 
-func New(module string, opt ...Option) zerolog.Logger {
+func New(module string, opt ...Option) Logger {
 	cfg := NewConfig(opt...)
-	return zerolog.New(cfg.Target).With().
-		Timestamp().Str("module", module).Logger().Level(cfg.Level).Hook(cfg.Hooks...)
+	return Logger{zerolog.New(cfg.Target).With().
+		Timestamp().Str("module", module).Logger().Level(cfg.Level).Hook(cfg.Hooks...)}
 }
 
 type Config struct {
