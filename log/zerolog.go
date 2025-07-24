@@ -2,131 +2,73 @@ package log
 
 import (
 	"context"
-	"io"
-	"os"
 	"time"
 
 	"github.com/rs/zerolog"
-	"github.com/sabariramc/go-kit/env"
-	"github.com/sabariramc/go-kit/log/correlation"
 )
-
-func EventCorrelation(e *zerolog.Event, level zerolog.Level, message string) {
-	ctx := e.GetCtx()
-	if ctx == nil {
-		return
-	}
-	if corr, ok := correlation.ExtractCorrelationParam(ctx); ok && corr != nil {
-		msgDict := zerolog.Dict().Str("correlationID", corr.CorrelationID)
-		if corr.ScenarioID != "" {
-			msgDict = msgDict.Str("scenarioID", corr.ScenarioID)
-		}
-		if corr.SessionID != "" {
-			msgDict = msgDict.Str("sessionID", corr.SessionID)
-		}
-		if corr.ScenarioName != "" {
-			msgDict = msgDict.Str("scenarioName", corr.ScenarioName)
-		}
-		e.Dict("correlation", msgDict)
-	}
-}
-
-func getLevel() zerolog.Level {
-	logLevel := env.Get("LOG_LEVEL", "error")
-	lvl, err := zerolog.ParseLevel(logLevel)
-	if err != nil {
-		lvl = zerolog.ErrorLevel
-	}
-	return lvl
-}
 
 type Logger struct {
 	zerolog.Logger
 }
 
-func (l Logger) Trace(ctx context.Context) *zerolog.Event {
+func (l *Logger) Trace(ctx context.Context) *zerolog.Event {
 	return l.Logger.Trace().Ctx(ctx)
 }
 
-func (l Logger) Debug(ctx context.Context) *zerolog.Event {
+func (l *Logger) Debug(ctx context.Context) *zerolog.Event {
 	return l.Logger.Debug().Ctx(ctx)
 }
 
-func (l Logger) Info(ctx context.Context) *zerolog.Event {
+func (l *Logger) Info(ctx context.Context) *zerolog.Event {
 	return l.Logger.Info().Ctx(ctx)
 }
 
-func (l Logger) Warn(ctx context.Context) *zerolog.Event {
+func (l *Logger) Warn(ctx context.Context) *zerolog.Event {
 	return l.Logger.Warn().Ctx(ctx)
 }
 
-func (l Logger) Error(ctx context.Context) *zerolog.Event {
+func (l *Logger) Error(ctx context.Context) *zerolog.Event {
 	return l.Logger.Error().Ctx(ctx)
 }
 
-func (l Logger) Panic(ctx context.Context) *zerolog.Event {
+func (l *Logger) Panic(ctx context.Context) *zerolog.Event {
 	return l.Logger.Panic().Ctx(ctx)
 }
 
-func (l Logger) Fatal(ctx context.Context) *zerolog.Event {
+func (l *Logger) Fatal(ctx context.Context) *zerolog.Event {
 	return l.Logger.Fatal().Ctx(ctx)
 }
 
-func NewConsoleWriter(module string, opt ...Option) Logger {
+func setContext(logCtx zerolog.Context, module string, labels map[string]string) zerolog.Context {
+	for key, value := range labels {
+		logCtx = logCtx.Str(key, value)
+	}
+	logCtx = logCtx.Str("module", module).Timestamp()
+	return logCtx
+}
+
+func NewConsoleWriter(module string, opt ...Option) *Logger {
 	cfg := NewConfig(opt...)
-	return Logger{zerolog.New(zerolog.NewConsoleWriter(func(w *zerolog.ConsoleWriter) {
+	logCtx := zerolog.New(zerolog.NewConsoleWriter(func(w *zerolog.ConsoleWriter) {
 		w.TimeFormat = time.RFC3339
 		w.Out = cfg.Target
 		w.NoColor = false
-	})).With().Timestamp().Str("module", module).Logger().Level(cfg.Level).Hook(cfg.Hooks...)}
+	})).With()
+	logCtx = setContext(logCtx, module, cfg.Labels)
+	l := Logger{logCtx.Logger().Level(cfg.Level).Hook(cfg.Hooks...)}
+	if cfg.LevelScanner > 0 {
+		go l.scanLevel(cfg.LevelScanner)
+	}
+	return &l
 }
 
-func New(module string, opt ...Option) Logger {
+func New(module string, opt ...Option) *Logger {
 	cfg := NewConfig(opt...)
-	return Logger{zerolog.New(cfg.Target).With().
-		Timestamp().Str("module", module).Logger().Level(cfg.Level).Hook(cfg.Hooks...)}
-}
-
-type Config struct {
-	Hooks  []zerolog.Hook
-	Target io.Writer
-	Level  zerolog.Level
-}
-
-func NewConfig(opts ...Option) *Config {
-	c := &Config{
-		Hooks:  []zerolog.Hook{zerolog.HookFunc(EventCorrelation)},
-		Target: os.Stdout,
-		Level:  getLevel(),
+	logCtx := zerolog.New(cfg.Target).With().Str("module", module).Timestamp()
+	logCtx = setContext(logCtx, module, cfg.Labels)
+	l := Logger{logCtx.Logger().Level(cfg.Level).Hook(cfg.Hooks...)}
+	if cfg.LevelScanner > 0 {
+		go l.scanLevel(cfg.LevelScanner)
 	}
-	for _, opt := range opts {
-		opt(c)
-	}
-	return c
-}
-
-type Option func(*Config)
-
-func WithHooks(hooks ...zerolog.Hook) Option {
-	return func(c *Config) {
-		c.Hooks = append(c.Hooks, hooks...)
-	}
-}
-
-func WithTarget(target io.Writer) Option {
-	return func(c *Config) {
-		c.Target = target
-	}
-}
-
-func WithLevel(level zerolog.Level) Option {
-	return func(c *Config) {
-		c.Level = level
-	}
-}
-
-func WithNewHooks(hooks ...zerolog.Hook) Option {
-	return func(c *Config) {
-		c.Hooks = hooks
-	}
+	return &l
 }
