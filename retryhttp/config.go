@@ -24,7 +24,7 @@ type Config struct {
 	CheckRetry   CheckRetry    // CheckRetry is the function to determine if a request should be retried.
 	Backoff      Backoff       // Backoff is the function to determine the wait duration between retries.
 	Client       *http.Client  // Client is the underlying HTTP client used to make requests.
-	Log          log.Logger    // Logger for the HTTP client
+	Log          *log.Logger   // Logger for the HTTP client
 }
 
 // newDefaultHTTPClient creates and configures a new HTTP client with custom transport settings.

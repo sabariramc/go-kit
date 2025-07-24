@@ -14,7 +14,7 @@ import (
 
 type Client struct {
 	*http.Client
-	log          log.Logger
+	log          *log.Logger
 	retryMax     uint
 	minRetryWait time.Duration
 	maxRetryWait time.Duration
