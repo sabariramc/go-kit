@@ -14,18 +14,17 @@ import (
 
 func TestZerolog(t *testing.T) {
 	os.Setenv("LOG_LEVEL", "trace")
-	jlog := log.New("default", func(c *log.Config) {
-		c.LevelScanner = 100 * time.Millisecond
-	})
 	ctx := correlation.GetContextWithCorrelationParam(context.Background(), &correlation.EventCorrelation{
 		CorrelationID: "12345",
 		ScenarioID:    "67890",
 		SessionID:     "abcde"})
-
-	jlog.Debug(ctx).Msg("This is a debug message")
-	clog := log.NewConsoleWriter("test", func(c *log.Config) {
+	jlog := log.New("default", func(c *log.Config) {
 		c.LevelScanner = 100 * time.Millisecond
 	})
+	clog := log.New("test", func(c *log.Config) {
+		c.LevelScanner = 100 * time.Millisecond
+	}, log.WithConsole())
+	jlog.Debug(ctx).Msg("This is a debug message")
 	clog.Debug(ctx).Msg("This is a debug message in console")
 	os.Setenv("LOG_LEVEL", "error")
 	time.Sleep(200 * time.Millisecond) // Wait for level scanner to update the log level
@@ -61,7 +60,7 @@ func BenchmarkLog(b *testing.B) {
 			jlog.Debug(nctx).Msg("This is a debug message")
 		}
 	})
-	clog := log.NewConsoleWriter("test", log.WithTarget(io.Discard))
+	clog := log.New("test", log.WithTarget(io.Discard), log.WithConsole())
 
 	b.Run("console with Context", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {

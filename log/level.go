@@ -18,7 +18,6 @@ func getLevel() zerolog.Level {
 }
 
 func (l *Logger) scanLevel(timeout time.Duration) {
-
 	ticker := time.NewTicker(timeout)
 	defer ticker.Stop()
 	for range ticker.C {

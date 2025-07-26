@@ -82,3 +82,13 @@ func WithLogger(logger *zerolog.Logger) Option {
 		c.Logger = logger
 	}
 }
+
+func WithConsole() Option {
+	return func(c *Config) {
+		c.Target = zerolog.NewConsoleWriter(func(w *zerolog.ConsoleWriter) {
+			w.TimeFormat = time.RFC3339
+			w.Out = c.Target
+			w.NoColor = false
+		})
+	}
+}

@@ -2,7 +2,6 @@ package log
 
 import (
 	"context"
-	"time"
 
 	"github.com/rs/zerolog"
 )
@@ -45,25 +44,6 @@ func setContext(logCtx zerolog.Context, module string, labels map[string]string)
 	}
 	logCtx = logCtx.Str("module", module).Timestamp()
 	return logCtx
-}
-
-func NewConsoleWriter(module string, opt ...Option) *Logger {
-	cfg := NewConfig(opt...)
-	if cfg.Logger == nil {
-		lg := zerolog.New(zerolog.NewConsoleWriter(func(w *zerolog.ConsoleWriter) {
-			w.TimeFormat = time.RFC3339
-			w.Out = cfg.Target
-			w.NoColor = false
-		}))
-		cfg.Logger = &lg
-	}
-	logCtx := cfg.Logger.With()
-	logCtx = setContext(logCtx, module, cfg.Labels)
-	l := Logger{logCtx.Logger().Level(cfg.Level).Hook(cfg.Hooks...)}
-	if cfg.LevelScanner > 0 {
-		go l.scanLevel(cfg.LevelScanner)
-	}
-	return &l
 }
 
 func New(module string, opt ...Option) *Logger {
