@@ -49,11 +49,15 @@ func setContext(logCtx zerolog.Context, module string, labels map[string]string)
 
 func NewConsoleWriter(module string, opt ...Option) *Logger {
 	cfg := NewConfig(opt...)
-	logCtx := zerolog.New(zerolog.NewConsoleWriter(func(w *zerolog.ConsoleWriter) {
-		w.TimeFormat = time.RFC3339
-		w.Out = cfg.Target
-		w.NoColor = false
-	})).With()
+	if cfg.Logger == nil {
+		lg := zerolog.New(zerolog.NewConsoleWriter(func(w *zerolog.ConsoleWriter) {
+			w.TimeFormat = time.RFC3339
+			w.Out = cfg.Target
+			w.NoColor = false
+		}))
+		cfg.Logger = &lg
+	}
+	logCtx := cfg.Logger.With()
 	logCtx = setContext(logCtx, module, cfg.Labels)
 	l := Logger{logCtx.Logger().Level(cfg.Level).Hook(cfg.Hooks...)}
 	if cfg.LevelScanner > 0 {
@@ -64,7 +68,11 @@ func NewConsoleWriter(module string, opt ...Option) *Logger {
 
 func New(module string, opt ...Option) *Logger {
 	cfg := NewConfig(opt...)
-	logCtx := zerolog.New(cfg.Target).With().Str("module", module).Timestamp()
+	if cfg.Logger == nil {
+		lg := zerolog.New(cfg.Target)
+		cfg.Logger = &lg
+	}
+	logCtx := cfg.Logger.With()
 	logCtx = setContext(logCtx, module, cfg.Labels)
 	l := Logger{logCtx.Logger().Level(cfg.Level).Hook(cfg.Hooks...)}
 	if cfg.LevelScanner > 0 {

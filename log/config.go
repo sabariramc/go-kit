@@ -35,6 +35,7 @@ type Config struct {
 	Level        zerolog.Level
 	LevelScanner time.Duration
 	Labels       map[string]string
+	Logger       *zerolog.Logger
 }
 
 func NewConfig(opts ...Option) *Config {
@@ -73,5 +74,11 @@ func WithLevel(level zerolog.Level) Option {
 func WithNewHooks(hooks ...zerolog.Hook) Option {
 	return func(c *Config) {
 		c.Hooks = hooks
+	}
+}
+
+func WithLogger(logger *zerolog.Logger) Option {
+	return func(c *Config) {
+		c.Logger = logger
 	}
 }
