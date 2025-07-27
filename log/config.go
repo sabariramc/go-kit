@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
+	"github.com/sabariramc/go-kit/env"
 	"github.com/sabariramc/go-kit/log/correlation"
 )
 
@@ -29,6 +30,15 @@ func EventCorrelation(e *zerolog.Event, level zerolog.Level, message string) {
 	}
 }
 
+func getLevel() zerolog.Level {
+	logLevel := env.Get(EnvLogLevel, "error")
+	lvl, err := zerolog.ParseLevel(logLevel)
+	if err != nil {
+		lvl = zerolog.ErrorLevel
+	}
+	return lvl
+}
+
 type Config struct {
 	Hooks        []zerolog.Hook
 	Target       io.Writer
@@ -40,10 +50,11 @@ type Config struct {
 
 func NewConfig(opts ...Option) *Config {
 	c := &Config{
-		Hooks:  []zerolog.Hook{zerolog.HookFunc(EventCorrelation)},
-		Target: os.Stdout,
-		Level:  getLevel(),
-		Labels: map[string]string{},
+		Hooks:        []zerolog.Hook{zerolog.HookFunc(EventCorrelation)},
+		Target:       os.Stdout,
+		Level:        getLevel(),
+		Labels:       map[string]string{},
+		LevelScanner: time.Second * time.Duration(env.GetInt(EnvLogLevelScanIntervalInSec, 60)),
 	}
 	for _, opt := range opts {
 		opt(c)

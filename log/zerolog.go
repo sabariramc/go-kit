@@ -2,12 +2,31 @@ package log
 
 import (
 	"context"
+	"time"
 
 	"github.com/rs/zerolog"
 )
 
 type Logger struct {
 	zerolog.Logger
+}
+
+func New(module string, opt ...Option) *Logger {
+	cfg := NewConfig(opt...)
+	if cfg.Logger == nil {
+		lg := zerolog.New(cfg.Target)
+		cfg.Logger = &lg
+	}
+	logCtx := cfg.Logger.With()
+	for key, value := range cfg.Labels {
+		logCtx = logCtx.Str(key, value)
+	}
+	logCtx = logCtx.Str("module", module).Timestamp()
+	l := Logger{logCtx.Logger().Level(cfg.Level).Hook(cfg.Hooks...)}
+	if cfg.LevelScanner > 0 {
+		go l.scanLevel(cfg.LevelScanner)
+	}
+	return &l
 }
 
 func (l *Logger) Trace(ctx context.Context) *zerolog.Event {
@@ -38,25 +57,14 @@ func (l *Logger) Fatal(ctx context.Context) *zerolog.Event {
 	return l.Logger.Fatal().Ctx(ctx)
 }
 
-func setContext(logCtx zerolog.Context, module string, labels map[string]string) zerolog.Context {
-	for key, value := range labels {
-		logCtx = logCtx.Str(key, value)
+func (l *Logger) scanLevel(timeout time.Duration) {
+	ticker := time.NewTicker(timeout)
+	defer ticker.Stop()
+	for range ticker.C {
+		newLevel := getLevel()
+		if newLevel != l.GetLevel() {
+			l.Logger = l.Logger.Level(newLevel)
+			l.Info(context.Background()).Msgf("Log level changed to %s", newLevel)
+		}
 	}
-	logCtx = logCtx.Str("module", module).Timestamp()
-	return logCtx
-}
-
-func New(module string, opt ...Option) *Logger {
-	cfg := NewConfig(opt...)
-	if cfg.Logger == nil {
-		lg := zerolog.New(cfg.Target)
-		cfg.Logger = &lg
-	}
-	logCtx := cfg.Logger.With()
-	logCtx = setContext(logCtx, module, cfg.Labels)
-	l := Logger{logCtx.Logger().Level(cfg.Level).Hook(cfg.Hooks...)}
-	if cfg.LevelScanner > 0 {
-		go l.scanLevel(cfg.LevelScanner)
-	}
-	return &l
 }
