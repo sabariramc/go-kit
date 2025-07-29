@@ -1,0 +1,7 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/sabariramc/go-kit/log/ratelimiter
+cpu: Apple M3 Max
+BenchmarkRateLimiter-14    	 5111332	       217.5 ns/op	      32 B/op	       1 allocs/op
+PASS
+ok  	github.com/sabariramc/go-kit/log/ratelimiter	1.782s
