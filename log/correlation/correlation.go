@@ -45,19 +45,26 @@ func (c *EventCorrelation) MarshalJSON() ([]byte, error) {
 	return []byte(sb.String()), nil
 }
 
+const (
+	CorrelationIDHeader = "X-Correlation-ID"
+	ScenarioIDHeader    = "X-Scenario-ID"
+	SessionIDHeader     = "X-Session-ID"
+	ScenarioNameHeader  = "X-Scenario-Name"
+)
+
 func (c *EventCorrelation) GetHeader() map[string]string {
 	headers := make(map[string]string, 10)
 	if c.CorrelationID != "" {
-		headers["X-Correlation-ID"] = c.CorrelationID
+		headers[CorrelationIDHeader] = c.CorrelationID
 	}
 	if c.ScenarioID != "" {
-		headers["X-Scenario-ID"] = c.ScenarioID
+		headers[ScenarioIDHeader] = c.ScenarioID
 	}
 	if c.SessionID != "" {
-		headers["X-Session-ID"] = c.SessionID
+		headers[SessionIDHeader] = c.SessionID
 	}
 	if c.ScenarioName != "" {
-		headers["X-Scenario-Name"] = c.ScenarioName
+		headers[ScenarioNameHeader] = c.ScenarioName
 	}
 	return headers
 }
