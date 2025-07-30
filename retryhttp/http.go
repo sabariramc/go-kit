@@ -12,6 +12,16 @@ import (
 	"github.com/sabariramc/go-kit/log"
 )
 
+type Hook interface {
+	Run(req *http.Request)
+}
+
+type HookFunc func(req *http.Request)
+
+func (h HookFunc) Run(req *http.Request) {
+	h(req)
+}
+
 type Client struct {
 	*http.Client
 	log          *log.Logger
@@ -20,6 +30,7 @@ type Client struct {
 	maxRetryWait time.Duration
 	checkRetry   CheckRetry
 	backoff      Backoff
+	hooks        []Hook
 }
 
 func New(options ...Option) *Client {
@@ -68,7 +79,7 @@ func (c *Client) Head(ctx context.Context, url string) (resp *http.Response, err
 
 // Do sends an HTTP request and performs retries with exponential backoff as needed,
 // based on the retry and backoff configuration.
-func (h *Client) Do(req *http.Request) (*http.Response, error) {
+func (c *Client) Do(req *http.Request) (*http.Response, error) {
 	/*this is a modified version of go-retryablehttp*/
 	var resp *http.Response
 	var attempt int
@@ -78,14 +89,18 @@ func (h *Client) Do(req *http.Request) (*http.Response, error) {
 	if req.ContentLength > 0 {
 		reqBody, _ = io.ReadAll(req.Body)
 	}
+	for _, hook := range c.hooks {
+		c.log.Debug(req.Context()).Msgf("Executing hook before request: %T", hook)
+		hook.Run(req)
+	}
 	for i := 0; ; i++ {
 		doErr = nil
 		attempt++
 		if req.ContentLength > 0 {
 			req.Body = io.NopCloser(bytes.NewReader(reqBody))
 		}
-		resp, doErr = h.Client.Do(req)
-		shouldRetry, respErr = h.backOffAndRetry(i, req, resp, doErr)
+		resp, doErr = c.Client.Do(req)
+		shouldRetry, respErr = c.backOffAndRetry(i, req, resp, doErr)
 		if !shouldRetry {
 			break
 		}
@@ -108,30 +123,30 @@ func (h *Client) Do(req *http.Request) (*http.Response, error) {
 
 // backOffAndRetry determines if the request should be retried and calculates the backoff duration.
 // It logs the retry attempt and waits for the backoff duration before retrying.
-func (h *Client) backOffAndRetry(i int, req *http.Request, resp *http.Response, doErr error) (bool, error) {
-	shouldRetry, respErr := h.checkRetry(req.Context(), resp, doErr)
+func (c *Client) backOffAndRetry(i int, req *http.Request, resp *http.Response, doErr error) (bool, error) {
+	shouldRetry, respErr := c.checkRetry(req.Context(), resp, doErr)
 	if !shouldRetry || respErr != nil {
 		return shouldRetry, respErr
 	}
-	remain := h.retryMax - uint(i)
+	remain := c.retryMax - uint(i)
 	if remain <= 0 {
 		return false, respErr
 	}
-	wait := h.backoff(h.minRetryWait, h.maxRetryWait, i, resp)
+	wait := c.backoff(c.minRetryWait, c.maxRetryWait, i, resp)
 	if resp != nil && resp.ContentLength > 0 {
 		defer resp.Body.Close()
 		resBlob, _ := io.ReadAll(resp.Body)
-		h.log.Warn(req.Context()).Str("response", string(resBlob)).Msgf("request failed with status code %v retry %v of %v in %vms, resp: ", resp.StatusCode, i+1, h.retryMax, wait.Milliseconds())
+		c.log.Warn(req.Context()).Str("response", string(resBlob)).Msgf("request failed with status code %v retry %v of %v in %vms, resp: ", resp.StatusCode, i+1, c.retryMax, wait.Milliseconds())
 	} else if doErr != nil {
-		h.log.Warn(req.Context()).Err(doErr).Msgf("request failed with error - retry %v of %v in %vms", i+1, h.retryMax, wait.Milliseconds())
+		c.log.Warn(req.Context()).Err(doErr).Msgf("request failed with error - retry %v of %v in %vms", i+1, c.retryMax, wait.Milliseconds())
 	} else {
-		h.log.Warn(req.Context()).Msgf("request failed - retry %v of %v in %vms", i+1, h.retryMax, wait.Milliseconds())
+		c.log.Warn(req.Context()).Msgf("request failed - retry %v of %v in %vms", i+1, c.retryMax, wait.Milliseconds())
 	}
 	timer := time.NewTimer(wait)
 	select {
 	case <-req.Context().Done():
 		timer.Stop()
-		h.Client.CloseIdleConnections()
+		c.Client.CloseIdleConnections()
 		return false, req.Context().Err()
 	case <-timer.C:
 	}

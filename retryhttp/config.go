@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/sabariramc/go-kit/log"
+	"github.com/sabariramc/go-kit/log/correlation"
 )
 
 // CheckRetry defines a function type for determining if a request should be retried.
@@ -14,6 +15,20 @@ type CheckRetry func(ctx context.Context, resp *http.Response, err error) (bool,
 
 // Backoff defines a function type for determining the backoff duration between retries.
 type Backoff func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration
+
+func EventCorrelation(req *http.Request) {
+	if req == nil {
+		return
+	}
+	correlation, bool := correlation.ExtractCorrelationParam(req.Context())
+	if !bool {
+		return
+	}
+	headers := correlation.GetHeader()
+	for key, value := range headers {
+		req.Header.Set(key, value)
+	}
+}
 
 // Config contains the configuration settings for the HTTP client, including logging,
 // retry policies, backoff strategies, and the HTTP client itself.
@@ -25,6 +40,7 @@ type Config struct {
 	Backoff      Backoff       // Backoff is the function to determine the wait duration between retries.
 	Client       *http.Client  // Client is the underlying HTTP client used to make requests.
 	Log          *log.Logger   // Logger for the HTTP client
+	Hook         []Hook        // Hooks are functions that can be executed before making a request.
 }
 
 // newDefaultHTTPClient creates and configures a new HTTP client with custom transport settings.
@@ -49,50 +65,21 @@ func GetDefaultConfig() Config {
 		Backoff:      retryablehttp.DefaultBackoff,     // Uses the default backoff strategy.
 		Client:       newDefaultHTTPClient(),           // Uses a custom HTTP client with specific transport settings.
 		Log:          log.New("HttpClient"),
+		Hook:         []Hook{HookFunc(EventCorrelation)}, // Initializes the hooks with the EventCorrelation function.
 	}
 }
 
 // Option represents an option function for configuring the config struct.
 type Option func(*Config)
 
-// WithRetryMax sets the maximum number of retries for the config.
-func WithRetryMax(retryMax uint) Option {
-	return func(c *Config) {
-		c.RetryMax = retryMax
+func WithHooks(hooks ...Hook) Option {
+	return func(cfg *Config) {
+		cfg.Hook = append(cfg.Hook, hooks...)
 	}
 }
 
-// WithMinRetryWait sets the minimum retry wait duration for the config.
-func WithMinRetryWait(minRetryWait time.Duration) Option {
-	return func(c *Config) {
-		c.MinRetryWait = minRetryWait
-	}
-}
-
-// WithMaxRetryWait sets the maximum retry wait duration for the config.
-func WithMaxRetryWait(maxRetryWait time.Duration) Option {
-	return func(c *Config) {
-		c.MaxRetryWait = maxRetryWait
-	}
-}
-
-// WithCheckRetry sets the check retry function for the config.
-func WithCheckRetry(checkRetry CheckRetry) Option {
-	return func(c *Config) {
-		c.CheckRetry = checkRetry
-	}
-}
-
-// WithBackoff sets the backoff strategy for the config.
-func WithBackoff(backoff Backoff) Option {
-	return func(c *Config) {
-		c.Backoff = backoff
-	}
-}
-
-// WithHTTPClient sets the HTTP client for the config.
-func WithHTTPClient(client *http.Client) Option {
-	return func(c *Config) {
-		c.Client = client
+func WithNewHooks(hook ...Hook) Option {
+	return func(cfg *Config) {
+		cfg.Hook = hook
 	}
 }
