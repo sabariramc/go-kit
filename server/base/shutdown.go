@@ -20,7 +20,7 @@ func (b *Base) AwaitShutdownCompletion() {
 //
 // This function sets up a channel to receive OS signals and starts a goroutine to monitor those signals.
 // When a signal is received, it triggers the server shutdown process.
-func (b *Base) startSignalMonitor(ctx context.Context) error {
+func (b *Base) StartSignalMonitor(ctx context.Context) error {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGTERM, os.Interrupt)
 	go b.monitorSignals(ctx, c)

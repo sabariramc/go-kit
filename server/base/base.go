@@ -30,6 +30,5 @@ func New(option ...Option) *Base {
 	zone, _ := time.Now().Zone()
 	b.log.Info(context.TODO()).Msgf("Timezone %v", zone)
 	b.shutdownWg.Add(1)
-	go b.startSignalMonitor(context.TODO())
 	return b
 }
