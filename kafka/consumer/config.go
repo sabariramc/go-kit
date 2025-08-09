@@ -23,11 +23,11 @@ const (
 
 type Config struct {
 	*kafka.ReaderConfig
-	AutoCommit     AutoCommit
-	Log            *log.Logger
-	MessageContext []MessageContext
-	SpanOp         span.SpanOp
-	ClosePollCh    bool
+	AutoCommit  AutoCommit
+	Log         *log.Logger
+	Hooks       []Hook
+	SpanOp      span.SpanOp
+	ClosePollCh bool
 }
 
 func ValidateConfig(config *Config) error {
@@ -40,7 +40,7 @@ func ValidateConfig(config *Config) error {
 	return config.ReaderConfig.Validate()
 }
 
-func NewDefaultConfig() *Config {
+func NewConfig() *Config {
 	rl, _ := ratelimiter.New(func(c *ratelimiter.Config) {
 		c.BlockSize = 1 * time.Second
 		c.WindowSize = time.Minute
@@ -78,9 +78,9 @@ func NewDefaultConfig() *Config {
 			IntervalInMs: uint64(env.GetInt(ck.EnvConsumerAutoCommitIntervalInMs, 1000)),
 			BatchSize:    uint64(env.GetInt(ck.EnvConsumerAutoCommitBatchSize, 50)),
 		},
-		Log:            logger,
-		MessageContext: []MessageContext{MessageContextFunc(CorelationHook)},
-		ClosePollCh:    true,
+		Log:         logger,
+		Hooks:       []Hook{HookFunc(CorelationHook)},
+		ClosePollCh: true,
 	}
 	return config
 }
@@ -99,14 +99,6 @@ func WithLogger(logger *log.Logger) Options {
 				internalLog.Error().Msgf(s, i...)
 			})
 		}
-		return nil
-	}
-}
-
-func WithTracer(tracer Tracer) Options {
-	return func(c *Config) error {
-		c.MessageContext = append(c.MessageContext, TraceMessageContext{tr: tracer})
-		c.SpanOp = tracer
 		return nil
 	}
 }

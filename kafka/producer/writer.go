@@ -35,12 +35,19 @@ func New(ctx context.Context, opt ...Options) (*Writer, error) {
 	}, nil
 }
 
+func (w *Writer) AddHook(hook Hook) {
+	if hook == nil {
+		return
+	}
+	w.hooks = append(w.hooks, hook)
+}
+
 func (w *Writer) WriteMessages(ctx context.Context, msgs ...kafka.Message) error {
 	if len(msgs) == 0 {
 		return nil
 	}
 	for i := range msgs {
-		w.process(ctx, &msgs[i])
+		w.runHooks(ctx, &msgs[i])
 	}
 	if w.tr != nil {
 		var sp span.Span
@@ -50,7 +57,7 @@ func (w *Writer) WriteMessages(ctx context.Context, msgs ...kafka.Message) error
 	return w.Writer.WriteMessages(ctx, msgs...)
 }
 
-func (w *Writer) process(ctx context.Context, msg *kafka.Message) {
+func (w *Writer) runHooks(ctx context.Context, msg *kafka.Message) {
 	for _, hook := range w.hooks {
 		if err := hook.Run(ctx, msg); err != nil {
 			w.log.Error(ctx).Err(err).Msgf("Failed to execute hook for message with key %s", string(msg.Key))

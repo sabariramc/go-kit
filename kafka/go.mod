@@ -7,7 +7,7 @@ require (
 	github.com/rs/zerolog v1.34.0
 	github.com/sabariramc/go-kit/env v1.0.0
 	github.com/sabariramc/go-kit/instrumentation v1.0.1
-	github.com/sabariramc/go-kit/log v1.3.0
+	github.com/sabariramc/go-kit/log v1.3.1
 	github.com/segmentio/kafka-go v0.4.48
 	gotest.tools/v3 v3.5.2
 )

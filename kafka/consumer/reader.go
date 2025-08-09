@@ -67,13 +67,13 @@ type Reader struct {
 	topics           topics
 	count            uint64
 	pollLock         sync.Mutex
-	msgContext       []MessageContext
+	hooks            []Hook
 	tr               span.SpanOp
 	closePollCh      bool
 }
 
 func New(ctx context.Context, options ...Options) (*Reader, error) {
-	config := NewDefaultConfig()
+	config := NewConfig()
 	for _, opt := range options {
 		err := opt(config)
 		if err != nil {
@@ -92,10 +92,18 @@ func New(ctx context.Context, options ...Options) (*Reader, error) {
 		consumedOffset: make(OffsetMap),
 		topics:         config.ReaderConfig.GroupTopics,
 		tr:             config.SpanOp,
-		msgContext:     config.MessageContext,
+		hooks:          config.Hooks,
 		closePollCh:    config.ClosePollCh,
 	}
 	return k, nil
+}
+
+func (k *Reader) AddHook(hook Hook) {
+	if hook == nil {
+		return
+	}
+	k.hooks = append(k.hooks, hook)
+
 }
 
 func (k *Reader) Poll(ctx context.Context, ch chan<- *MessageWithContext) (offset OffsetMap, err error) {
@@ -266,8 +274,8 @@ func (k *Reader) storeOffset(msg *kafka.Message) {
 
 func (k *Reader) getMessageContext(msg *kafka.Message) context.Context {
 	ctx := context.Background()
-	for _, hook := range k.msgContext {
-		ctx = hook.Get(ctx, msg)
+	for _, hook := range k.hooks {
+		ctx = hook.Run(ctx, msg)
 	}
 	return ctx
 }

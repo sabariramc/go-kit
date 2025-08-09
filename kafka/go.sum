@@ -29,8 +29,8 @@ github.com/sabariramc/go-kit/env v1.0.0 h1:KVB1B3G6yX2tDkGjeDMArAbAgmuAUZjfAzWLt
 github.com/sabariramc/go-kit/env v1.0.0/go.mod h1:W1YjQepf1ZVGNbA76vT1cATtRJMwtieouTex24UYyvA=
 github.com/sabariramc/go-kit/instrumentation v1.0.1 h1:06EkG86JmU6GbaBoH+YdasesAIPUqCctXm4LyZGRam4=
 github.com/sabariramc/go-kit/instrumentation v1.0.1/go.mod h1:Gl9krFbGAf459SqkQ3JsVa6MD4I78NGI71CdCwxYOiM=
-github.com/sabariramc/go-kit/log v1.3.0 h1:JyY6I6M4Rt8D96KNc3MkvG6sghnK9TRZPLbVn7IxIW8=
-github.com/sabariramc/go-kit/log v1.3.0/go.mod h1:wgefa9nOWp6lyY3DkRjKryoy91HKsD2bay9aGSGAi2I=
+github.com/sabariramc/go-kit/log v1.3.1 h1:Nn2VoO9oY41u7hpG8w5D8WSIZVap4TegTFcUZMQZA78=
+github.com/sabariramc/go-kit/log v1.3.1/go.mod h1:wgefa9nOWp6lyY3DkRjKryoy91HKsD2bay9aGSGAi2I=
 github.com/segmentio/kafka-go v0.4.48 h1:9jyu9CWK4W5W+SroCe8EffbrRZVqAOkuaLd/ApID4Vs=
 github.com/segmentio/kafka-go v0.4.48/go.mod h1:HjF6XbOKh0Pjlkr5GVZxt6CsjjwnmhVOfURM5KMd8qg=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
