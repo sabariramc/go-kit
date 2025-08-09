@@ -4,7 +4,7 @@ go 1.24.4
 
 require (
 	github.com/hashicorp/go-retryablehttp v0.7.8
-	github.com/sabariramc/go-kit/log v1.1.1
+	github.com/sabariramc/go-kit/log v1.3.1
 	gotest.tools/v3 v3.5.2
 )
 
