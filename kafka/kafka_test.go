@@ -29,7 +29,7 @@ func TestKafkaPollSyncWriter(t *testing.T) {
 		return nil
 	}, producer.WithLogger(log.New(producer.ModuleProducer, log.WithLogger(&logger.Logger))))
 	assert.NilError(t, err)
-	defer pr.Close()
+	defer pr.Close(ctx)
 	testKafkaPoll(t, ctx, "TestKafkaPoll", pr, 10)
 }
 
@@ -41,7 +41,7 @@ func TestKafkaPollAsyncWriter(t *testing.T) {
 	})
 	pr, err := producer.New(context.TODO(), producer.WithLogger(log.New(producer.ModuleProducer, log.WithLogger(&logger.Logger))))
 	assert.NilError(t, err)
-	defer pr.Close()
+	defer pr.Close(ctx)
 	testKafkaPoll(t, ctx, TopicMultiplePartitionsTwo, pr, 10000)
 }
 
@@ -53,7 +53,7 @@ func TestMultiplePartitions(t *testing.T) {
 	})
 	pr, err := producer.New(context.TODO(), producer.WithLogger(log.New(producer.ModuleProducer, log.WithLogger(&logger.Logger))))
 	assert.NilError(t, err)
-	defer pr.Close()
+	defer pr.Close(ctx)
 	var wg sync.WaitGroup
 	ch := make(chan *consumer.MessageWithContext, 100)
 	tCtx, cancel := context.WithCancel(ctx)
@@ -134,7 +134,7 @@ func TestKafkaPollWithDelay(t *testing.T) {
 	topic := TopicMultiplePartitionsOne
 	pr, err := producer.New(context.TODO(), producer.WithLogger(log.New(producer.ModuleProducer, log.WithLogger(&logger.Logger))))
 	assert.NilError(t, err)
-	defer pr.Close()
+	defer pr.Close(ctx)
 	ch := make(chan *consumer.MessageWithContext, 100)
 	msgCount := 0
 	count := 0

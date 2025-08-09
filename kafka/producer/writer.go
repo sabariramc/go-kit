@@ -57,3 +57,10 @@ func (w *Writer) process(ctx context.Context, msg *kafka.Message) {
 		}
 	}
 }
+
+func (w *Writer) Close(ctx context.Context) error {
+	if err := w.Writer.Close(); err != nil {
+		return fmt.Errorf("kafka.Writer.Close: error closing writer: %w", err)
+	}
+	return nil
+}
