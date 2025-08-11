@@ -48,7 +48,7 @@ func New(t *testing.T) *TestServer {
 }
 
 func (s *TestServer) registerRoutes(router *handler.Router) {
-	router.Use(middleware.SetCorrelationMiddleware, middleware.RequestTimerMiddleware(s.log), middleware.PanicHandleMiddleware(s.log, nil))
+	router.Use(middleware.SetCorrelationMiddleware(nil), middleware.RequestTimerMiddleware(s.log), middleware.PanicHandleMiddleware(s.log, nil))
 	router.HandlerFunc(http.MethodGet, "/meta/bench", s.benc)
 	router.HandlerFunc(http.MethodGet, "/meta/health", s.HealthCheck)
 	router.HandlePath("/service/echo", http.HandlerFunc(s.echo))

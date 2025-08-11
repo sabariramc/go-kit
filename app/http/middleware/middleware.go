@@ -39,13 +39,30 @@ func GetCorrelationParam(r *http.Request) *correlation.EventCorrelation {
 	return corr
 }
 
-func SetCorrelationMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		corr := GetCorrelationParam(r)
-		ctx := correlation.GetContextWithCorrelationParam(r.Context(), corr)
-		r = r.WithContext(ctx)
-		next.ServeHTTP(w, r)
-	})
+func SetCorrelationMiddleware(tr span.SpanOp) Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			corr := GetCorrelationParam(r)
+			if tr != nil {
+				span, ok := tr.GetSpanFromContext(r.Context())
+				if ok {
+					span.SetAttribute("correlationId", corr.CorrelationID)
+					if corr.ScenarioID != "" {
+						span.SetAttribute("scenarioId", corr.ScenarioID)
+					}
+					if corr.SessionID != "" {
+						span.SetAttribute("sessionId", corr.SessionID)
+					}
+					if corr.ScenarioName != "" {
+						span.SetAttribute("scenarioName", corr.ScenarioName)
+					}
+				}
+			}
+			ctx := correlation.GetContextWithCorrelationParam(r.Context(), corr)
+			r = r.WithContext(ctx)
+			next.ServeHTTP(w, r)
+		})
+	}
 }
 
 func RequestTimerMiddleware(log *log.Logger) Middleware {
