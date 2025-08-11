@@ -56,6 +56,9 @@ func NewConfig(opts ...Option) *Config {
 		Labels:       map[string]string{},
 		LevelScanner: time.Second * time.Duration(env.GetInt(EnvLogLevelScanIntervalInSec, 60)),
 	}
+	if env.Get(EnvLogFormat, "json") == "console" {
+		c.Target = newConsoleLogger(c.Target)
+	}
 	for _, opt := range opts {
 		opt(c)
 	}
@@ -94,12 +97,17 @@ func WithLogger(logger *zerolog.Logger) Option {
 	}
 }
 
+func newConsoleLogger(out io.Writer) *zerolog.ConsoleWriter {
+	log := zerolog.NewConsoleWriter(func(w *zerolog.ConsoleWriter) {
+		w.TimeFormat = time.RFC3339
+		w.Out = out
+		w.NoColor = false
+	})
+	return &log
+}
+
 func WithConsole() Option {
 	return func(c *Config) {
-		c.Target = zerolog.NewConsoleWriter(func(w *zerolog.ConsoleWriter) {
-			w.TimeFormat = time.RFC3339
-			w.Out = c.Target
-			w.NoColor = false
-		})
+		c.Target = newConsoleLogger(c.Target)
 	}
 }
