@@ -4,6 +4,7 @@ go 1.24.5
 
 require (
 	github.com/sabariramc/go-kit/env v1.0.0
+	github.com/sabariramc/go-kit/errors v1.0.1
 	github.com/sabariramc/go-kit/log v1.3.1
 )
 
