@@ -14,8 +14,8 @@ import (
 
 type Server struct {
 	*http.Server
+	*base.Base
 	handler http.Handler
-	base    *base.Base
 	log     *log.Logger
 }
 
@@ -25,7 +25,7 @@ func New(opt ...Option) (*Server, error) {
 		return nil, err
 	}
 	h := &Server{
-		base:    cfg.Base,
+		Base:    cfg.Base,
 		handler: cfg.Server.Handler,
 		log:     cfg.Log,
 		Server:  cfg.Server,
@@ -43,12 +43,12 @@ func (h *Server) Close(ctx context.Context) error {
 
 func (h *Server) ListenAndServe() {
 	h.log.Info(context.Background()).Msgf("Server starting at %v", h.Server.Addr)
-	go h.base.StartSignalMonitor(context.Background())
+	go h.StartSignalMonitor(context.Background())
 	err := h.Server.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
 		h.log.Error(context.Background()).Err(err).Msg("Server crashed")
 	}
-	h.base.AwaitShutdownCompletion()
+	h.AwaitShutdownCompletion()
 }
 
 func (h *Server) CopyRequestBody(r *http.Request) ([]byte, error) {
