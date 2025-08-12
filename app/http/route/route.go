@@ -3,8 +3,8 @@ package route
 import (
 	"net/http"
 
+	"github.com/sabariramc/go-kit/app/base"
 	"github.com/sabariramc/go-kit/app/http/constant"
-	"github.com/sabariramc/go-kit/app/http/errorhandler"
 	"github.com/sabariramc/go-kit/errors"
 )
 
@@ -20,7 +20,7 @@ func NotFound() http.HandlerFunc {
 				"path": r.URL.Path,
 			},
 		}
-		_, body := errorhandler.Handle(r.Context(), err)
+		_, body := base.ProcessError(r.Context(), err)
 		w.Write(body)
 	}
 }
@@ -38,7 +38,7 @@ func MethodNotAllowed() http.HandlerFunc {
 				"method": r.Method,
 			},
 		}
-		_, body := errorhandler.Handle(r.Context(), err)
+		_, body := base.ProcessError(r.Context(), err)
 		w.Write(body)
 	}
 }

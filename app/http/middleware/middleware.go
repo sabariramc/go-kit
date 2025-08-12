@@ -9,7 +9,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/sabariramc/go-kit/app/base"
-	"github.com/sabariramc/go-kit/app/http/errorhandler"
 	span "github.com/sabariramc/go-kit/instrumentation"
 	"github.com/sabariramc/go-kit/log"
 	"github.com/sabariramc/go-kit/log/correlation"
@@ -87,7 +86,7 @@ func PanicHandleMiddleware(log *log.Logger, tr span.SpanOp) Middleware {
 					if !ok {
 						err = fmt.Errorf("error occurred during request processing")
 					}
-					statusCode, body := errorhandler.Handle(r.Context(), err)
+					statusCode, body := base.ProcessError(r.Context(), err)
 					if tr != nil {
 						sp, ok := tr.GetSpanFromContext(r.Context())
 						if ok {

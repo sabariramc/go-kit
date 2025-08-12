@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/sabariramc/go-kit/app/base"
 	"github.com/sabariramc/go-kit/app/http/constant"
-	"github.com/sabariramc/go-kit/app/http/errorhandler"
 )
 
 // ResponseWriter is a custom response writer that logs responses and request bodies.
@@ -59,7 +59,7 @@ func (h *Server) WriteResponse(ctx context.Context, w http.ResponseWriter, conte
 
 // WriteErrorResponse writes an error response, logging the error and stack trace.
 func (h *Server) WriteErrorResponse(ctx context.Context, w http.ResponseWriter, err error) {
-	statusCode, body := errorhandler.Handle(ctx, err)
+	statusCode, body := base.ProcessError(ctx, err)
 	h.WriteJSONWithStatusCode(ctx, w, statusCode, body)
 }
 

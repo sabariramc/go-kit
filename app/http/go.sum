@@ -15,8 +15,8 @@ github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/rs/xid v1.6.0/go.mod h1:7XoLgs4eV+QndskICGsho+ADou8ySMSjJKDIan90Nz0=
 github.com/rs/zerolog v1.34.0 h1:k43nTLIwcTVQAncfCw4KZ2VY6ukYoZaBPNOE8txlOeY=
 github.com/rs/zerolog v1.34.0/go.mod h1:bJsvje4Z08ROH4Nhs5iH600c3IkWhwp44iRc54W6wYQ=
-github.com/sabariramc/go-kit/app/base v1.0.0 h1:3kudSwZlChKamgBjryc2tcznB61fAmZmTzMx/OmQNXI=
-github.com/sabariramc/go-kit/app/base v1.0.0/go.mod h1:tncE5gurlpmNBfsdl+XML2vSkNni3/QKaokKf2f1WlA=
+github.com/sabariramc/go-kit/app/base v1.0.1 h1:oe6xi6ED9ssmfjEetg4MK9r3QZctuNyUo3dd+HQHsdc=
+github.com/sabariramc/go-kit/app/base v1.0.1/go.mod h1:XhVrhefH/WOTfDZkZ7I9+GpyhldU1yuddZ/Ev9zi6o0=
 github.com/sabariramc/go-kit/env v1.0.0 h1:KVB1B3G6yX2tDkGjeDMArAbAgmuAUZjfAzWLtyFsfas=
 github.com/sabariramc/go-kit/env v1.0.0/go.mod h1:W1YjQepf1ZVGNbA76vT1cATtRJMwtieouTex24UYyvA=
 github.com/sabariramc/go-kit/errors v1.0.1 h1:WNsDAibAdAqg6thvkpxomkrrp6qy1XLfyMav/8nnoao=
