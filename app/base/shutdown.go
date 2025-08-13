@@ -39,6 +39,12 @@ func (b *Base) RegisterOnShutdownHook(handler ShutdownHook) {
 // This function iterates through all registered shutdown hooks, executing each one within a specified timeout context.
 // It logs the progress of the shutdown process and ensures all hooks are processed before completing the shutdown.
 func (b *Base) Shutdown(ctx context.Context) {
+	b.lock.Lock()
+	defer b.lock.Unlock()
+	if b.shutdownInitiated {
+		return
+	}
+	b.shutdownInitiated = true
 	b.log.Info(ctx).Msg("Gracefully shutting down")
 	hooksCount := len(b.shutdownHooks)
 	for i, hook := range b.shutdownHooks {

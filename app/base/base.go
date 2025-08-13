@@ -11,10 +11,12 @@ import (
 
 // Base represents a basic application structure with configuration, logging, status check, health check, and shutdown functionality.
 type Base struct {
-	log           *log.Logger       // Logger instance for the application.
-	shutdownHooks []ShutdownHook    // List of shutdown hooks to be executed during application shutdown.
-	healthHooks   []HealthCheckHook // List of health check hooks.
-	shutdownWg    sync.WaitGroup    // WaitGroup for synchronizing shutdown.
+	log               *log.Logger       // Logger instance for the application.
+	shutdownHooks     []ShutdownHook    // List of shutdown hooks to be executed during application shutdown.
+	healthHooks       []HealthCheckHook // List of health check hooks.
+	shutdownWg        sync.WaitGroup    // WaitGroup for synchronizing shutdown.
+	lock              sync.Mutex
+	shutdownInitiated bool
 }
 
 func New(option ...Option) *Base {
