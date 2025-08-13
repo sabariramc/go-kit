@@ -35,12 +35,18 @@ func (o OffsetMap) MarshalZerologObject(e *zerolog.Event) {
 	}
 }
 
-type topics []string
+type Topics []string
 
-func (t topics) MarshalZerologArray(a *zerolog.Array) {
+func (t Topics) MarshalZerologArray(a *zerolog.Array) {
 	for _, topic := range t {
 		a.Str(topic)
 	}
+}
+
+func (t Topics) Copy() Topics {
+	res := make(Topics, len(t))
+	copy(res, t)
+	return res
 }
 
 type MessageWithContext struct {
@@ -64,7 +70,7 @@ type Reader struct {
 	autoCommitCancel context.CancelFunc
 	pollCancel       context.CancelFunc
 	wg               sync.WaitGroup
-	topics           topics
+	topics           Topics
 	count            uint64
 	pollLock         sync.Mutex
 	hooks            []Hook
@@ -103,7 +109,10 @@ func (k *Reader) AddHook(hook Hook) {
 		return
 	}
 	k.hooks = append(k.hooks, hook)
+}
 
+func (k *Reader) GetTopics() Topics {
+	return k.topics.Copy()
 }
 
 func (k *Reader) Poll(ctx context.Context, ch chan<- *MessageWithContext) (offset OffsetMap, err error) {
