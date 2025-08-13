@@ -85,5 +85,6 @@ func TestKafkaConsumerContext(t *testing.T) {
 		for _ = range kc.ch {
 		}
 	}()
+	kc.RegisterHooks(pr)
 	kc.Start(timerCtx)
 }

@@ -25,8 +25,8 @@ github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZN
 github.com/rs/xid v1.6.0/go.mod h1:7XoLgs4eV+QndskICGsho+ADou8ySMSjJKDIan90Nz0=
 github.com/rs/zerolog v1.34.0 h1:k43nTLIwcTVQAncfCw4KZ2VY6ukYoZaBPNOE8txlOeY=
 github.com/rs/zerolog v1.34.0/go.mod h1:bJsvje4Z08ROH4Nhs5iH600c3IkWhwp44iRc54W6wYQ=
-github.com/sabariramc/go-kit/app/base v1.0.2 h1:QVoWq6n69jDmYI5mykjuc9qprC6IYI/bdOOlJAI4eUU=
-github.com/sabariramc/go-kit/app/base v1.0.2/go.mod h1:XhVrhefH/WOTfDZkZ7I9+GpyhldU1yuddZ/Ev9zi6o0=
+github.com/sabariramc/go-kit/app/base v1.0.3 h1:4WAHBLkd/IrJthxxqloTN5j0GKmEhCAkTrnbvm+pp54=
+github.com/sabariramc/go-kit/app/base v1.0.3/go.mod h1:XhVrhefH/WOTfDZkZ7I9+GpyhldU1yuddZ/Ev9zi6o0=
 github.com/sabariramc/go-kit/env v1.0.0 h1:KVB1B3G6yX2tDkGjeDMArAbAgmuAUZjfAzWLtyFsfas=
 github.com/sabariramc/go-kit/env v1.0.0/go.mod h1:W1YjQepf1ZVGNbA76vT1cATtRJMwtieouTex24UYyvA=
 github.com/sabariramc/go-kit/errors v1.0.1 h1:WNsDAibAdAqg6thvkpxomkrrp6qy1XLfyMav/8nnoao=

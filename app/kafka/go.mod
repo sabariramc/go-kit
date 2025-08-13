@@ -4,7 +4,7 @@ go 1.24.5
 
 require (
 	github.com/google/uuid v1.6.0
-	github.com/sabariramc/go-kit/app/base v1.0.2
+	github.com/sabariramc/go-kit/app/base v1.0.3
 	github.com/sabariramc/go-kit/env v1.0.0
 	github.com/sabariramc/go-kit/instrumentation v1.0.1
 	github.com/sabariramc/go-kit/kafka v1.0.2
